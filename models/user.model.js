@@ -1,21 +1,34 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const addressSchema = new mongoose.Schema({
   label: String,
   coordinates: {
-    type: { type: String, default: 'Point' },
+    type: { type: String, default: "Point" },
     coordinates: { type: [Number], required: true },
   },
 });
 
 const userSchema = new mongoose.Schema({
-  _id: mongoose.Schema.Types.ObjectId,
-  name: String,
+  fullname: {
+    firstname: {
+      type: String,
+      required: true,
+      min: 3,
+    },
+    lastname: {
+      type: String,
+      required: true,
+      min: 3,
+    },
+  },
   email: { type: String, unique: true },
-  phone: String,
+  phone: {
+    type: Number,
+    min: 10,
+    max: 10,
+  },
   password: String,
-  role: { type: String, enum: ['customer', 'owner', 'rider'], required: true },
-  address: [addressSchema]
+  address: [addressSchema],
 });
 
-module.exports = mongoose.models.User || mongoose.model('User', userSchema);
+module.exports = mongoose.models.User || mongoose.model("User", userSchema);
