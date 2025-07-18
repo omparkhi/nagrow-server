@@ -9,26 +9,39 @@ const addressSchema = new mongoose.Schema({
 });
 
 const userSchema = new mongoose.Schema({
-  fullname: {
-    firstname: {
-      type: String,
-      required: true,
-      min: 3,
-    },
-    lastname: {
-      type: String,
-      required: true,
-      min: 3,
-    },
+  firstName: {
+    type: String,
+    required: true,
+    minlength: 3,
   },
-  email: { type: String, unique: true },
+
+  lastName: {
+    type: String,
+    required: true,
+    minlength: 3,
+  },
+
+  email: {
+    type: String,
+    unique: true,
+    sparse: true,
+    match: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+  },
+
   phone: {
     type: Number,
-    min: 10,
-    max: 10,
+    match: /^[6-9]\d{9}$/,
+    required: true,
+    unique: true,
   },
-  password: String,
+
+  password: {
+    type: String,
+    required: true,
+    minlength: 6,
+  },
+
   address: [addressSchema],
 });
 
-module.exports = mongoose.models.User || mongoose.model("User", userSchema);
+module.exports = mongoose.model("User", userSchema);
