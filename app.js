@@ -7,10 +7,11 @@ const connectDB = require("./db/db");
 
 connectDB();
 
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 app.get("/", (req, res) => {
   res.send("this is home route");
 });
 
-app.listen(process.env.PORT || 4000, () => {
-  console.log(`server is running on port ${process.env.PORT}`);
-});
+module.exports = app;
