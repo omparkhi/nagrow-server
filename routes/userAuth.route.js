@@ -6,5 +6,6 @@ const router = express.Router();
 
 router.post("/send-otp", userAuthController.sendOtp);
 router.post("/verify-otp", userAuthController.verifyOtp);
+router.post("/register-user", userAuthController.registerUser);
 
 module.exports = router;

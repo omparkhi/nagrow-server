@@ -1,5 +1,8 @@
 const { sendOtpToPhone } = require("../services/otp.services");
 const otpModel = require("../models/otp.model");
+const bcrypt = require("bcryptjs");
+const generateToken = require("../utils/generateToken");
+const User = require("../models/user.model");
 
 exports.sendOtp = async (req, res) => {
   const { phone } = req.body;
@@ -8,8 +11,7 @@ exports.sendOtp = async (req, res) => {
     return res.status(400), json({ message: "Phone number is required" });
   }
 
-  // const otp = Math.floor(100000 + Math.random() * 900000).toString();
-  const otp = Math.floor(1000 + Math.random() * 9000).toString();
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
   try {
     const data = await sendOtpToPhone(phone, otp);
@@ -59,5 +61,53 @@ exports.verifyOtp = async (req, res) => {
     res
       .status(500)
       .json({ success: false, message: "Server error", error: err.message });
+  }
+};
+
+exports.registerUser = async (req, res) => {
+  const { firstName, lastName, email, phone, password } = req.body;
+
+  if (!firstName || !lastName || !phone || !password) {
+    return res
+      .status(400)
+      .json({ message: "All required fields must be filled" });
+  }
+
+  try {
+    const existingUser = await User.findOne({ phone });
+
+    if (existingUser) {
+      return res
+        .status(400)
+        .json({ message: "User already exists with this phone" });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    const user = await User.create({
+      firstName,
+      lastName,
+      email,
+      phone,
+      password: hashedPassword,
+    });
+
+    const token = generateToken(user._id);
+
+    return res.status(201).json({
+      success: true,
+      message: "User registered successfully",
+      token,
+      user: {
+        id: user._id,
+        name: user.firstName,
+        email: user.email,
+        phone: user.phone,
+      },
+    });
+  } catch (err) {
+    console.error("Registration Error: ", err.message);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };
