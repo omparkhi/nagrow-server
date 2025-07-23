@@ -6,6 +6,7 @@ const app = express();
 const connectDB = require("./db/db");
 const cors = require("cors");
 const userAuthRoutes = require("./routes/userAuth.route");
+const adminAuthRoutes = require("./routes/adminAuth.route");
 
 connectDB();
 
@@ -17,6 +18,7 @@ app.get("/", (req, res) => {
   res.send("this is home route");
 });
 
-app.use("/api/users/", userAuthRoutes);
+app.use("/api/users", userAuthRoutes);
+app.use("/api/admin", adminAuthRoutes);
 
 module.exports = app;
