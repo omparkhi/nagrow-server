@@ -111,3 +111,50 @@ exports.registerUser = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
+exports.loginUser = async (req, res) => {
+  const { phone, password } = req.body;
+
+  if (!phone || !password) {
+    return res
+      .status(400)
+      .json({ message: "Phone number and password are required" });
+  }
+
+  try {
+    const user = await User.findOne({ phone });
+
+    if (!user) {
+      return res
+        .status(404)
+        .json({ message: "User not found with this number" });
+    }
+
+    //compare password
+
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if (!isMatch) {
+      return res
+        .status(401)
+        .json({ message: "Invalid phone number or password" });
+    }
+
+    const token = generateToken(user._id);
+
+    return res.status(200).json({
+      success: true,
+      message: "Login successful",
+      token,
+      user: {
+        id: user._id,
+        name: user.firstName,
+        email: user.email,
+        phone: user.phone,
+      },
+    });
+  } catch (err) {
+    console.error("Login Error", err.message);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+};
