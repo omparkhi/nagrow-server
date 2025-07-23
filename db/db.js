@@ -1,4 +1,7 @@
 const mongoose = require("mongoose");
+const dns = require("dns");
+
+dns.setServers(["8.8.8.8", "8.8.4.4"]);
 
 function connectDB() {
   mongoose
@@ -6,7 +9,9 @@ function connectDB() {
     .then(() => {
       console.log("mongoDB connected successfully");
     })
-    .catch((err) => console.log(err));
+    .catch((err) => {
+      console.error("❌ MongoDB connection failed:", err.message);
+    });
 }
 
 module.exports = connectDB;

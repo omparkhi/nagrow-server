@@ -1,0 +1,108 @@
+const { fields } = require("../middlewares/multer.js");
+const Restaurant = require("../models/restaurant.model");
+const cloudinary = require("../utils/cloudinary.js");
+const bcrypt = require("bcryptjs");
+const generateToken = require("../utils/generateToken.js");
+
+const uploadToCloudinary = (fileBuffer, fileName) => {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      {
+        folder: "restaurantDocs",
+        resource_type: "auto",
+        public_id: fileName,
+      },
+      (error, result) => {
+        if (error) reject(error);
+        else resolve(result.secure_url);
+      }
+    );
+    stream.end(fileBuffer);
+  });
+};
+
+exports.registerRestaurant = async (req, res) => {
+  const {
+    name,
+    ownername,
+    phone,
+    email,
+    password,
+    cuisine,
+    address,
+    deliveryTimeEstimate,
+  } = req.body;
+
+  if (!name || !ownername || !phone || !email || !password || !address) {
+    return res
+      .status(400)
+      .json({ message: "All required fields must be filled" });
+  }
+
+  try {
+    const existing = await Restaurant.findOne({ email });
+
+    if (existing) {
+      return res.status(400).json({ message: "email already exists" });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    //file uploads to cloudinary
+    const fileFields = ["license", "gst", "ownerId", "shopPhoto", "logo"];
+    const documents = {};
+
+    for (const field of fileFields) {
+      if (req.files[field]) {
+        const file = req.files[field][0];
+        documents[`${field}Url`] = await uploadToCloudinary(
+          file.buffer,
+          `${Date.now()}-${field}`
+        );
+      }
+    }
+
+    //build location update
+    let coordinates = [0, 0];
+    if (
+      address?.location?.coordinates &&
+      Array.isArray(address.location.coordinates) &&
+      address.location.coordinates.length === 2
+    ) {
+      coordinates = address.location.coordinates.map(Number);
+    }
+
+    const restaurant = await Restaurant.create({
+      name,
+      ownername,
+      phone,
+      email,
+      password: hashedPassword,
+      cuisine: cuisine ? (Array.isArray(cuisine) ? cuisine : [cuisine]) : [],
+      deliveryTimeEstimate,
+      address: {
+        street: address?.street || "",
+        city: address?.city || "",
+        state: address?.state || "",
+        pincode: address?.pincode || "",
+        location: {
+          type: "Point",
+          coordinates,
+        },
+      },
+      documents,
+    });
+
+    const token = generateToken(restaurant._id);
+
+    return res.status(200).json({
+      success: true,
+      message: "Restaurant Registered Successfully",
+      token,
+      restaurant,
+    });
+  } catch (err) {
+    console.error("Restaurant Registration Error: ", err.message);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};

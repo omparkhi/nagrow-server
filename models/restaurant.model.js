@@ -4,52 +4,78 @@ const restaurantSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: trusted,
+      required: true,
     },
+
     ownername: {
       type: String,
     },
+
     phone: {
       type: Number,
       match: /^[6-9]\d{9}$/,
       required: true,
       unique: true,
     },
+
     email: {
       type: String,
       match: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
     },
+
     password: {
       type: String,
-      required: TextTrackCue,
+      required: true,
     },
+
     address: {
-      street: String,
-      city: String,
-      state: String,
-      pincode: String,
+      street: { type: String },
+      city: { type: String },
+      state: { type: String },
+      pincode: { type: String },
       location: {
         type: {
           type: String,
+          enum: ["Point"],
           default: "Point",
         },
         coordinates: {
-          type: [Number],
-          required: true,
+          type: [Number], // [longitude, latitude]
+          default: [0, 0],
         },
       },
     },
-    cuisine: [String],
-    rating: {
-      type: Number,
-      default: 0,
-      min: 1,
-      max: 5,
+
+    cuisine: {
+      type: [String],
+      default: [],
     },
+
+    // rating: {
+    //   type: Number,
+    //   default: 0,
+    //   min: 1,
+    //   max: 5,
+    // },
+
     isOpen: {
       type: Boolean,
       default: true,
     },
+
+    documents: {
+      licenseUrl: { type: String },
+      gstUrl: { type: String },
+      ownerIdUrl: { type: String },
+      shopPhotoUrl: { type: String },
+      logoUrl: { type: String },
+    },
+
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
+
     deliveryTimeEstimate: {
       type: String,
     },
