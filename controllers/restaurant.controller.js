@@ -106,3 +106,40 @@ exports.registerRestaurant = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
+exports.loginRestaurant = async (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({ message: "Email and password are required" });
+  }
+
+  try {
+    const restaurant = await Restaurant.findOne({ email });
+
+    if (!restaurant) {
+      return res
+        .status(404)
+        .json({ message: "Restaurant with this email id Not Found" });
+    }
+
+    //compare password
+    const isMatch = await bcrypt.compare(password, restaurant.password);
+
+    if (!isMatch) {
+      return res.status(401).json({ message: "Invalid email id or password" });
+    }
+
+    const token = generateToken(restaurant._id);
+
+    return res.status(200).json({
+      success: true,
+      message: "Restaurant Login Successfull",
+      token,
+      restaurant,
+    });
+  } catch (err) {
+    console.error("Error while Restaurant Login", err.message);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+};

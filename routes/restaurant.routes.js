@@ -13,5 +13,6 @@ const multiUpload = upload.fields([
 ]);
 
 router.post("/register", multiUpload, restaurantController.registerRestaurant);
+router.post("/login", restaurantController.loginRestaurant);
 
 module.exports = router;
