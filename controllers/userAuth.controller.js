@@ -8,7 +8,7 @@ exports.sendOtp = async (req, res) => {
   const { phone } = req.body;
 
   if (!phone) {
-    return res.status(400), json({ message: "Phone number is required" });
+    return res.status(400).json({ message: "Phone number is required" });
   }
 
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
@@ -156,5 +156,54 @@ exports.loginUser = async (req, res) => {
   } catch (err) {
     console.error("Login Error", err.message);
     return res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+exports.saveAddress = async (req, res) => {
+  const { label, latitude, longitude } = req.body;
+  if (!label || !latitude || !longitude) {
+    return res.status(400).json({ message: "All fields are required" });
+  }
+
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(400).json({ message: "User not found" });
+    }
+
+    const newAddress = {
+      label,
+      coordinates: {
+        type: "Point",
+        coordinates: [longitude, latitude],
+      },
+    };
+
+    user.address.push(newAddress);
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Address saved successfully",
+      address: newAddress,
+    });
+  } catch (error) {
+    console.error(err);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+
+exports.getAddress = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user || !user.address || user.address.length === 0) {
+      return res
+        .status(400)
+        .json({ success: false, message: "No address found" });
+    }
+    return res.status(200).json({ success: true, addresses: user.address });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ success: false, message: "Server Error" });
   }
 };
