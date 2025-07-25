@@ -1,8 +1,8 @@
 const express = require("express");
 const router = express.Router();
+const upload = require("../../middlewares/multer");
 
-const upload = require("../middlewares/multer");
-const restaurantController = require("../controllers/restaurant.controller");
+const restaurantController = require("../../controllers/Restaurant/restaurant.controller");
 
 const multiUpload = upload.fields([
   { name: "license", maxCount: 1 },
@@ -12,7 +12,10 @@ const multiUpload = upload.fields([
   { name: "logo", maxCount: 1 },
 ]);
 
-router.post("/register", multiUpload, restaurantController.registerRestaurant);
-router.post("/login", restaurantController.loginRestaurant);
+router.post(
+  "/send-verify-req/restaurant",
+  multiUpload,
+  restaurantController.sendVerificationReqRestaurants
+);
 
 module.exports = router;

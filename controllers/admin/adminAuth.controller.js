@@ -1,6 +1,6 @@
-const Admin = require("../models/admin.model");
+const Admin = require("../../models/admin.model");
 const bcrypt = require("bcryptjs");
-const generateToken = require("../utils/generateToken");
+const generateToken = require("../../utils/generateToken");
 
 exports.registerAdmin = async (req, res) => {
   const { firstName, lastName, email, phone, password } = req.body;

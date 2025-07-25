@@ -5,9 +5,11 @@ const express = require("express");
 const app = express();
 const connectDB = require("./db/db");
 const cors = require("cors");
-const userAuthRoutes = require("./routes/userAuth.route");
-const adminAuthRoutes = require("./routes/adminAuth.route");
-const restaurantRoutes = require("./routes/restaurant.routes");
+const userAuthRoutes = require("./routes/user/userAuth.route");
+const adminAuthRoutes = require("./routes/admin/adminAuth.route");
+const adminRoutes = require("./routes/admin/admin.route");
+const restaurantAuthRoutes = require("./routes/Restaurant/restaurantAuth.routes");
+const restaurantRoutes = require("./routes/Restaurant/restaurant.routes");
 
 connectDB();
 
@@ -26,6 +28,8 @@ app.get("/", (req, res) => {
 
 app.use("/api/users", userAuthRoutes);
 app.use("/api/admin", adminAuthRoutes);
+app.use("/api/admin", adminRoutes);
+app.use("/api/restaurants", restaurantAuthRoutes);
 app.use("/api/restaurants", restaurantRoutes);
 
 module.exports = app;

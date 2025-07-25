@@ -1,8 +1,8 @@
-const { sendOtpToPhone } = require("../services/otp.services");
-const otpModel = require("../models/otp.model");
+const { sendOtpToPhone } = require("../../services/otp.services");
+const otpModel = require("../../models/otp.model");
 const bcrypt = require("bcryptjs");
-const generateToken = require("../utils/generateToken");
-const User = require("../models/user.model");
+const generateToken = require("../../utils/generateToken");
+const User = require("../../models/user.model");
 
 exports.sendOtp = async (req, res) => {
   const { phone } = req.body;

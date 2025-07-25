@@ -1,25 +1,7 @@
-const { fields } = require("../middlewares/multer.js");
-const Restaurant = require("../models/restaurant.model");
-const cloudinary = require("../utils/cloudinary.js");
+const Restaurant = require("../../models/restaurant.model.js");
+const cloudinary = require("../../utils/cloudinary.js");
 const bcrypt = require("bcryptjs");
-const generateToken = require("../utils/generateToken.js");
-
-const uploadToCloudinary = (fileBuffer, fileName) => {
-  return new Promise((resolve, reject) => {
-    const stream = cloudinary.uploader.upload_stream(
-      {
-        folder: "restaurantDocs",
-        resource_type: "auto",
-        public_id: fileName,
-      },
-      (error, result) => {
-        if (error) reject(error);
-        else resolve(result.secure_url);
-      }
-    );
-    stream.end(fileBuffer);
-  });
-};
+const generateToken = require("../../utils/generateToken.js");
 
 exports.registerRestaurant = async (req, res) => {
   const {
@@ -47,20 +29,6 @@ exports.registerRestaurant = async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-
-    //file uploads to cloudinary
-    const fileFields = ["license", "gst", "ownerId", "shopPhoto", "logo"];
-    const documents = {};
-
-    for (const field of fileFields) {
-      if (req.files[field]) {
-        const file = req.files[field][0];
-        documents[`${field}Url`] = await uploadToCloudinary(
-          file.buffer,
-          `${Date.now()}-${field}`
-        );
-      }
-    }
 
     //build location update
     let coordinates = [0, 0];
@@ -90,7 +58,6 @@ exports.registerRestaurant = async (req, res) => {
           coordinates,
         },
       },
-      documents,
     });
 
     const token = generateToken(restaurant._id);

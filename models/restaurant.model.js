@@ -76,6 +76,16 @@ const restaurantSchema = new mongoose.Schema(
       default: false,
     },
 
+    verificationStatus: {
+      type: String,
+      enum: ["not_submitted", "pending", "verified", "rejected"],
+      default: "not_submitted",
+    },
+
+    rejectionReason: {
+      type: String,
+    },
+
     deliveryTimeEstimate: {
       type: String,
     },
