@@ -10,6 +10,7 @@ const adminAuthRoutes = require("./routes/admin/adminAuth.route");
 const restaurantAuthRoutes = require("./routes/Restaurant/restaurantAuth.routes");
 const riderAuthRoutes = require("./routes/rider/riderAuth.route");
 const adminRoutes = require("./routes/admin/admin.route");
+const riderRoutes = require("./routes/rider/rider.route");
 const restaurantRoutes = require("./routes/Restaurant/restaurant.routes");
 
 connectDB();
@@ -38,6 +39,7 @@ app.get("/", (req, res) => {
 app.use("/api/users", userAuthRoutes);
 app.use("/api/restaurants", restaurantAuthRoutes);
 app.use("/api/rider", riderAuthRoutes);
+app.use("/api/rider", riderRoutes);
 app.use("/api/admin", adminAuthRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/restaurants", restaurantRoutes);
