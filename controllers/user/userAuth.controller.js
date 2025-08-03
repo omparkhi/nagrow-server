@@ -160,7 +160,7 @@ exports.loginUser = async (req, res) => {
 };
 
 exports.saveAddress = async (req, res) => {
-  const { label, latitude, longitude } = req.body;
+  const { label, latitude, longitude, fullAddress } = req.body;
   if (!label || !latitude || !longitude) {
     return res.status(400).json({ message: "All fields are required" });
   }
@@ -189,7 +189,7 @@ exports.saveAddress = async (req, res) => {
       address: newAddress,
     });
   } catch (error) {
-    console.error(err);
+    console.log(error);
     res.status(500).json({ message: "Server Error" });
   }
 };
