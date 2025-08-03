@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 
 const addressSchema = new mongoose.Schema({
   label: String,
+  fullAddress: { type: String, required: true },
   coordinates: {
     type: { type: String, default: "Point" },
     coordinates: { type: [Number], required: true },
@@ -12,7 +13,7 @@ const userSchema = new mongoose.Schema({
   firstName: {
     type: String,
     required: true,
-    minlength: 3,
+    minlength: 2,
   },
 
   lastName: {

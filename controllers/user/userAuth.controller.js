@@ -173,6 +173,7 @@ exports.saveAddress = async (req, res) => {
 
     const newAddress = {
       label,
+      fullAddress,
       coordinates: {
         type: "Point",
         coordinates: [longitude, latitude],
