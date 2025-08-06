@@ -12,6 +12,7 @@ const riderAuthRoutes = require("./routes/rider/riderAuth.route");
 const adminRoutes = require("./routes/admin/admin.route");
 const riderRoutes = require("./routes/rider/rider.route");
 const restaurantRoutes = require("./routes/Restaurant/restaurant.routes");
+const menuRoutes = require("./routes/Restaurant/menu.routes");
 
 connectDB();
 
@@ -43,5 +44,6 @@ app.use("/api/rider", riderRoutes);
 app.use("/api/admin", adminAuthRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/restaurants", restaurantRoutes);
+app.use("/api/restaurants", menuRoutes);
 
 module.exports = app;
