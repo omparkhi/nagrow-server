@@ -70,3 +70,15 @@ exports.addMenuItems = async (req, res) => {
     res.status(500).json({ message: "Server Error" });
   }
 };
+
+exports.getMenuItems = async (req, res) => {
+  const { restaurantId } = req.params;
+
+  try {
+    const menuItem = await MenuItems.find({ restaurantId });
+    res.status(200).json({ success: true, menuItem });
+  } catch (err) {
+    console.error("Error  fetching menu items: ", err.message);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};

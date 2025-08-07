@@ -9,4 +9,6 @@ router.post(
   menuItemsController.addMenuItems
 );
 
+router.get("/menu/:restaurantId", menuItemsController.getMenuItems);
+
 router.post = module.exports = router;
