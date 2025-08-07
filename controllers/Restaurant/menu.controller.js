@@ -82,3 +82,27 @@ exports.getMenuItems = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
+exports.updateMenuItems = async (req, res) => {
+  const { id } = req.params;
+  const updateData = req.body;
+
+  try {
+    const updatedItem = await MenuItems.findByIdAndUpdate(id, updateData, {
+      new: true,
+    });
+
+    if (!updatedItem) {
+      return res.status(404).json({ message: "Menu item not found" });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Menu item updated successfully",
+      menuItem: updatedItem,
+    });
+  } catch (err) {
+    console.error("Error updating menu item:", err.message);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
