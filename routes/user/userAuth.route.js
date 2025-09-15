@@ -11,5 +11,15 @@ router.post("/register", userAuthController.registerUser);
 router.post("/login", userAuthController.loginUser);
 router.post("/save-address", protect, userAuthController.saveAddress);
 router.get("/get-address", protect, userAuthController.getAddress);
+router.put(
+  "/update-address/:addressId",
+  protect,
+  userAuthController.updateAddress
+);
+router.delete(
+  "/delete-address/:addressId",
+  protect,
+  userAuthController.deleteAddress
+);
 
 module.exports = router;

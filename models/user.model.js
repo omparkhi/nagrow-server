@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const addressSchema = new mongoose.Schema({
   label: String,
   fullAddress: { type: String, required: true },
+  formattedAddress: { type: String, required: true },
   coordinates: {
     type: { type: String, default: "Point" },
     coordinates: { type: [Number], required: true },

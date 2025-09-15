@@ -3,6 +3,7 @@ const otpModel = require("../../models/otp.model");
 const bcrypt = require("bcryptjs");
 const generateToken = require("../../utils/generateToken");
 const User = require("../../models/user.model");
+const axios = require("axios");
 
 exports.sendOtp = async (req, res) => {
   const { phone } = req.body;
@@ -160,7 +161,7 @@ exports.loginUser = async (req, res) => {
 };
 
 exports.saveAddress = async (req, res) => {
-  const { label, latitude, longitude, fullAddress } = req.body;
+  const { addressId, label, latitude, longitude } = req.body;
   if (!label || !latitude || !longitude) {
     return res.status(400).json({ message: "All fields are required" });
   }
@@ -170,22 +171,60 @@ exports.saveAddress = async (req, res) => {
     if (!user) {
       return res.status(400).json({ message: "User not found" });
     }
+    const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
+    const geoRes = await axios.get(
+      `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${GOOGLE_API_KEY}`
+    );
+
+    if (!geoRes.data || geoRes.data.status !== "OK") {
+      return res
+        .status(400)
+        .json({ message: "Failed to fetch address from Google Maps" });
+    }
+    const fullAddress = geoRes.data.results[0].formatted_address;
+    const parts = fullAddress.split(",");
+    const houseNo = parts[0]?.includes("/")
+      ? parts[0].split("/")[1].trim()
+      : parts[0].trim();
+    const area = parts[1]?.trim() || "";
+    const city = parts[2]?.trim() || "";
+    const pinCode = parts[3]?.match(/\d{6}/)?.[0] || "";
+    const country = parts[4]?.trim() || "";
+    const formattedAddress = `House No: ${houseNo}, ${area}, ${city}, ${pinCode}, ${country}`;
 
     const newAddress = {
       label,
       fullAddress,
+      formattedAddress,
       coordinates: {
         type: "Point",
         coordinates: [longitude, latitude],
       },
     };
 
-    user.address.push(newAddress);
+    if (addressId) {
+      // updating existing address
+      const index = user.address.findIndex(
+        (addr) => addr._id.toString() === addressId
+      );
+      if (index === -1) {
+        return res.status(404).json({ message: "Address not found" });
+      }
+      user.address[index] = { ...user.address[index]._doc, ...newAddress };
+    } else {
+      // Add new address
+      user.address.push(newAddress);
+    }
+
+    // console.log("Saving address:", newAddress);
+
     await user.save();
 
     return res.status(200).json({
       success: true,
-      message: "Address saved successfully",
+      message: addressId
+        ? "Address updated successfully"
+        : "Address saved successfully",
       address: newAddress,
     });
   } catch (error) {
@@ -206,5 +245,65 @@ exports.getAddress = async (req, res) => {
   } catch (err) {
     console.error(err);
     return res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+exports.updateAddress = async (req, res) => {
+  const { addressId } = req.params;
+  const { formattedAddress } = req.body;
+
+  if (!formattedAddress) {
+    return res.status(400).json({ message: "All fields are required" });
+  }
+
+  try {
+    const user = await User.findOneAndUpdate(
+      { _id: req.user.id, "address._id": addressId },
+      {
+        $set: {
+          // "address.$.label": label,
+          "address.$.formattedAddress": formattedAddress,
+        },
+      },
+      { new: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({ message: "Address not found" });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Address Updatd Successfully",
+      addresses: user.address,
+    });
+  } catch (error) {
+    console.log("Update Address Error", error.message);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+exports.deleteAddress = async (req, res) => {
+  const { addressId } = req.params;
+
+  try {
+    const user = await User.findByIdAndUpdate(
+      req.user.id,
+      { $pull: { address: { _id: addressId } } },
+      { new: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Address deleted successfully",
+      addresses: user.address,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };
