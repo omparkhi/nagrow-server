@@ -13,7 +13,8 @@ const adminRoutes = require("./routes/admin/admin.route");
 const riderRoutes = require("./routes/rider/rider.route");
 const restaurantRoutes = require("./routes/Restaurant/restaurant.routes");
 const menuRoutes = require("./routes/Restaurant/menu.routes");
-const getRestaurantDish = require("./routes/Restaurant/getRestaurantDish.routes");
+const getRestaurantDish = require("./routes/user/getRestaurantDish.routes");
+const getRestaurantDetails = require("./routes/user/getRestaurantDetails.routes");
 
 connectDB();
 
@@ -47,5 +48,6 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/restaurants", restaurantRoutes);
 app.use("/api/restaurants", menuRoutes);
 app.use("/api/restaurants", getRestaurantDish);
+app.use("/api/restaurants", getRestaurantDetails);
 
 module.exports = app;
