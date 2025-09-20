@@ -10,7 +10,7 @@ exports.getAllUnverifiedRestaurants = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      count: unverifiedRestaurants.lenght,
+      count: unverifiedRestaurants.length,
       data: unverifiedRestaurants,
     });
   } catch (err) {
