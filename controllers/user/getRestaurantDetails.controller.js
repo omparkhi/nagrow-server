@@ -1,5 +1,6 @@
 const Restaurant = require("../../models/restaurant.model");
 const MenuItems = require("../../models/menuItems.model");
+const mongoose = require("mongoose");
 
 // restaurant details for user(customer)
 exports.getRestaurantDetails = async (req, res) => {
@@ -16,8 +17,8 @@ exports.getRestaurantDetails = async (req, res) => {
 
     // 2. Find menu items of this restaurant
     const menuItems = await MenuItems.find({
-      restaurantId: id,
-      isAvailable: true,
+      restaurantId:  new mongoose.Types.ObjectId(id),
+      isavailable: true,
     })
       .select("name description price image category")
       .lean();
@@ -39,8 +40,9 @@ exports.getRestaurantDetails = async (req, res) => {
         phone: restaurant.phone,
         cuisine: restaurant.cuisine,
         rating: restaurant.rating,
-        deliveryTime: restaurant.deliveryTime,
+        deliveryTimeEstimate: restaurant.deliveryTimeEstimate,
         image: restaurant.image,
+        documents : restaurant.documents,
       },
       menu: groupedMenu,
     });
