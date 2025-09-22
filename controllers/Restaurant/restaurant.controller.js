@@ -59,3 +59,12 @@ exports.sendVerificationReqRestaurants = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
+exports.getVerificationStatus = async (req, res) => {
+  try {
+    const restaurant = await Restaurant.findById(req.params.id).select("verificationStatus rejectionReason");
+    res.json(restaurant);
+  } catch (err) {
+    res.status(500).json({ error: "Server error" });
+  }
+}

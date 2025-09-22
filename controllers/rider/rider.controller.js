@@ -60,3 +60,27 @@ exports.sendVerificationRequest = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+exports.getVerificationStatus = async (req, res) => {
+  try {
+    const { riderId } = req.params;
+
+    const rider = await Rider.findById(riderId).select(
+      "verificationStatus rejectionReason isVerified"
+    );
+
+    if (!rider) {
+      return res.status(404).json({ message: "Rider not found" });
+    }
+
+    res.status(200).json({
+      status: rider.verificationStatus,
+      reason: rider.rejectionReason,
+      isVerified: rider.isVerified,
+    });
+  } catch (err) {
+    console.error("Error fetching rider verification status:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+

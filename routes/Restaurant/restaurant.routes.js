@@ -18,4 +18,6 @@ router.post(
   restaurantController.sendVerificationReqRestaurants
 );
 
+router.get("/:id/status", restaurantController.getVerificationStatus);
+
 module.exports = router;

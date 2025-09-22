@@ -16,4 +16,9 @@ router.post(
   riderController.sendVerificationRequest
 );
 
+router.get(
+  "/get-verification-status/:riderId",
+  riderController.getVerificationStatus
+);
+
 module.exports = router;
