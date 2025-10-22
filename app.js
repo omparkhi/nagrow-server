@@ -15,6 +15,7 @@ const restaurantRoutes = require("./routes/Restaurant/restaurant.routes");
 const menuRoutes = require("./routes/Restaurant/menu.routes");
 const getRestaurantDish = require("./routes/user/getRestaurantDish.routes");
 const getRestaurantDetails = require("./routes/user/getRestaurantDetails.routes");
+const paymentRoutes = require("./routes/user/payment.routes");
 
 connectDB();
 
@@ -49,5 +50,6 @@ app.use("/api/restaurants", restaurantRoutes);
 app.use("/api/restaurants", menuRoutes);
 app.use("/api/restaurants", getRestaurantDish);
 app.use("/api/restaurants", getRestaurantDetails);
+app.use("/api/payment/", paymentRoutes)
 
 module.exports = app;
