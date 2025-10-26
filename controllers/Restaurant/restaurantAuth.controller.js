@@ -110,3 +110,19 @@ exports.loginRestaurant = async (req, res) => {
     return res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
+exports.getAddress = async (req, res) => {
+  try {
+    const restaurant = await Restaurant.findById(req.restaurantId);
+    if(!restaurant || !restaurant.address || !restaurant.address.length === 0) {
+      return res
+        .status(400)
+        .json({ success: false, message: "No Address Found" });
+    }
+    console.log(restaurant.address);
+    return res.status(200).message({ success: true, addresses: restaurant.address });
+
+  } catch (err) {
+    return res.status(500).json({ success: false, message: "Server Error" });
+  }
+};

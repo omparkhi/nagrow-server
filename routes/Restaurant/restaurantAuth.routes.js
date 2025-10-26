@@ -6,5 +6,6 @@ const restaurantController = require("../../controllers/Restaurant/restaurantAut
 
 router.post("/register", restaurantController.registerRestaurant);
 router.post("/login", restaurantController.loginRestaurant);
+router.get("/get-address", restaurantController.getAddress);
 
 module.exports = router;

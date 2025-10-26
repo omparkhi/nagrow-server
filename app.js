@@ -50,6 +50,6 @@ app.use("/api/restaurants", restaurantRoutes);
 app.use("/api/restaurants", menuRoutes);
 app.use("/api/restaurants", getRestaurantDish);
 app.use("/api/restaurants", getRestaurantDetails);
-app.use("/api/payment/", paymentRoutes)
+app.use("/api/payment", paymentRoutes)
 
 module.exports = app;
