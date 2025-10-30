@@ -106,7 +106,7 @@ exports.loginRestaurant = async (req, res) => {
       restaurant,
     });
   } catch (err) {
-    console.error("Error while Restaurant Login", err.message);
+    console.log("Error while Restaurant Login", err.message);
     return res.status(500).json({ message: "Internal Server Error" });
   }
 };

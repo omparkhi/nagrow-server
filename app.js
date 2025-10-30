@@ -8,6 +8,7 @@ const cors = require("cors");
 const userAuthRoutes = require("./routes/user/userAuth.route");
 const adminAuthRoutes = require("./routes/admin/adminAuth.route");
 const restaurantAuthRoutes = require("./routes/Restaurant/restaurantAuth.routes");
+const restaurantOrderRoutes = require("./routes/Restaurant/getOrder.routes");
 const riderAuthRoutes = require("./routes/rider/riderAuth.route");
 const adminRoutes = require("./routes/admin/admin.route");
 const riderRoutes = require("./routes/rider/rider.route");
@@ -26,12 +27,15 @@ connectDB();
 //   })
 // );
 
-app.use(
-  cors({
-    origin: "*",
-    credentials: true,
-  })
-);
+
+// CORS
+app.use(cors({
+  origin: "http://localhost:5173",
+  credentials: true,
+  methods: ["GET","POST","PUT","DELETE","OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+}));
+
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -50,6 +54,7 @@ app.use("/api/restaurants", restaurantRoutes);
 app.use("/api/restaurants", menuRoutes);
 app.use("/api/restaurants", getRestaurantDish);
 app.use("/api/restaurants", getRestaurantDetails);
+app.use("/api/orders/restaurants", restaurantOrderRoutes);
 app.use("/api/payment", paymentRoutes)
 
 module.exports = app;

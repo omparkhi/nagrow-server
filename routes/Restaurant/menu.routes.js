@@ -12,4 +12,4 @@ router.post(
 router.get("/menu/:restaurantId", menuItemsController.getMenuItems);
 router.put("/menu/update/:id", menuItemsController.updateMenuItems);
 
-router.post = module.exports = router;
+module.exports = router;

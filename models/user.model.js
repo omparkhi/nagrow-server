@@ -8,6 +8,10 @@ const addressSchema = new mongoose.Schema({
     type: { type: String, default: "Point" },
     coordinates: { type: [Number], required: true },
   },
+  selectedAddress: {
+    type: Boolean,
+    default: false,
+  }
 });
 
 const userSchema = new mongoose.Schema({

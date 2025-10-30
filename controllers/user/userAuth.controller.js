@@ -160,6 +160,18 @@ exports.loginUser = async (req, res) => {
   }
 };
 
+exports.fetchProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id).select("-password");
+    if(!user) return res.status(404).json({ message: "user not found" });
+
+    res.json({ success: true, user })
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 exports.saveAddress = async (req, res) => {
   const { addressId, label, latitude, longitude } = req.body;
   if (!label || !latitude || !longitude) {
@@ -235,15 +247,44 @@ exports.saveAddress = async (req, res) => {
 
 exports.getAddress = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id);
+    const userId = req.user.id;
+    const { addressId } = req.query;
+
+    const user = await User.findById(userId);
+
     if (!user || !user.address || user.address.length === 0) {
       return res
         .status(400)
         .json({ success: false, message: "No address found" });
     }
-    return res.status(200).json({ success: true, addresses: user.address });
+
+    if(addressId) {
+      user.address.forEach((a) => (a.selectedAddress = false));
+
+      const target = user.address.id(addressId);
+      if(!target) {
+        return res
+          .status(404)
+          .json({ success: false, message: "Address not found" });
+      }
+      target.selectedAddress = true;
+    }
+
+    if(!user.address.some((a) => a.selectedAddress)) {
+      user.address[0].selectedAddress = true;
+    }
+
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message: addressId
+        ? "Address selected successfully"
+        : "Addresses fetched successfully",
+      addresses: user.address,
+    });
   } catch (err) {
-    console.error(err);
+    console.log(err);
     return res.status(500).json({ success: false, message: "Server Error" });
   }
 };
@@ -307,3 +348,5 @@ exports.deleteAddress = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
+

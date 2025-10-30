@@ -9,8 +9,10 @@ router.post("/send-otp", userAuthController.sendOtp);
 router.post("/verify-otp", userAuthController.verifyOtp);
 router.post("/register", userAuthController.registerUser);
 router.post("/login", userAuthController.loginUser);
+router.get("/profile/:id", protect, userAuthController.fetchProfile);
 router.post("/save-address", protect, userAuthController.saveAddress);
 router.get("/get-address", protect, userAuthController.getAddress);
+// router.put("/select-address/:addressId", userAuthController.selectAddress);
 router.put(
   "/update-address/:addressId",
   protect,

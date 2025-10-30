@@ -3,6 +3,11 @@ const restaurantModel = require("./restaurant.model");
 
 const orderschema = new mongoose.Schema(
   {
+    orderId: {
+      type: String, 
+      unique: true, 
+      required: true,
+    },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -28,19 +33,30 @@ const orderschema = new mongoose.Schema(
       type: Number,
       required: true,
     },
-    deliveryAddress: String,
+    deliveryAddress: {
+      type: String,
+      required: true,
+    },
+    paymentType: {
+      type: String,
+      enum: ["online", "cod"],
+      default: "online",
+    },
     status: {
       type: String,
       enum: [
         "placed",
         "accepted",
         "preparing",
+        "ready",
         "on the way",
         "delivered",
         "cancelled",
       ],
       default: "placed",
     },
+    paymentId: { type: String },
+    razorpayOrderId: { type: String },
     paymentStatus: {
       type: String,
       enum: ["pending", "completed", "failed"],
