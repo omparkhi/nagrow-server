@@ -6,7 +6,7 @@ let io;
 function initializeSocket(server) {
   io = socketIo(server, {
     cors: {
-      origin: "*",
+      origin: "https://nagrow-client-demo.vercel.app/",
       methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
       allowedHeaders: ["Content-Type", "Authorization"]
     },
