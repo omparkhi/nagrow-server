@@ -19,7 +19,7 @@ const riderSchema = new mongoose.Schema(
       required: true,
     },
 
-    isavailable: {
+    isAvailable: {
       type: Boolean,
       default: true,
     },
@@ -63,8 +63,11 @@ const riderSchema = new mongoose.Schema(
     rejectionReason: {
       type: String,
     },
+    currentOrderId: { type: mongoose.Schema.Types.ObjectId, ref: "Order", default: null },
   },
   { timestamps: true }
 );
+
+riderSchema.index({ location: "2dsphere" });
 
 module.exports = mongoose.model("Rider", riderSchema);

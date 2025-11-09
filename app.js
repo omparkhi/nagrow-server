@@ -9,6 +9,7 @@ const userAuthRoutes = require("./routes/user/userAuth.route");
 const adminAuthRoutes = require("./routes/admin/adminAuth.route");
 const restaurantAuthRoutes = require("./routes/Restaurant/restaurantAuth.routes");
 const restaurantOrderRoutes = require("./routes/Restaurant/getOrder.routes");
+const restaurantOrderByIdRoutes = require("./routes/Restaurant/getOrderById.routes");
 const riderAuthRoutes = require("./routes/rider/riderAuth.route");
 const adminRoutes = require("./routes/admin/admin.route");
 const riderRoutes = require("./routes/rider/rider.route");
@@ -17,6 +18,7 @@ const menuRoutes = require("./routes/Restaurant/menu.routes");
 const getRestaurantDish = require("./routes/user/getRestaurantDish.routes");
 const getRestaurantDetails = require("./routes/user/getRestaurantDetails.routes");
 const paymentRoutes = require("./routes/user/payment.routes");
+const getUserOrderRoutes = require("./routes/user/getUserOrder.routes");
 
 connectDB();
 
@@ -46,6 +48,7 @@ app.get("/", (req, res) => {
 
 app.use("/api/users", userAuthRoutes);
 app.use("/api/restaurants", restaurantAuthRoutes);
+
 app.use("/api/rider", riderAuthRoutes);
 app.use("/api/rider", riderRoutes);
 app.use("/api/admin", adminAuthRoutes);
@@ -54,7 +57,10 @@ app.use("/api/restaurants", restaurantRoutes);
 app.use("/api/restaurants", menuRoutes);
 app.use("/api/restaurants", getRestaurantDish);
 app.use("/api/restaurants", getRestaurantDetails);
-app.use("/api/orders/restaurants", restaurantOrderRoutes);
+app.use("/api/get/orders", restaurantOrderRoutes);
 app.use("/api/payment", paymentRoutes)
+app.use("/api/order/details", restaurantOrderByIdRoutes);
+
+app.use("/api/user", getUserOrderRoutes);
 
 module.exports = app;

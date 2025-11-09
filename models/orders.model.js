@@ -16,7 +16,7 @@ const orderschema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Restaurant",
     },
-    riderid: {
+    riderId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Rider",
     },
@@ -34,8 +34,14 @@ const orderschema = new mongoose.Schema(
       required: true,
     },
     deliveryAddress: {
-      type: String,
-      required: true,
+      formattedAddress: {
+        type: String,
+        required: true,
+      },
+      coordinates: {
+        type: [Number], // [longitude, latitude]
+        required: true,
+      },
     },
     paymentType: {
       type: String,

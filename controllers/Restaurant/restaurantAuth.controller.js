@@ -53,6 +53,7 @@ exports.registerRestaurant = async (req, res) => {
         city: address?.city || "",
         state: address?.state || "",
         pincode: address?.pincode || "",
+        fullAddress: address?.fullAddress || "",
         location: {
           type: "Point",
           coordinates,

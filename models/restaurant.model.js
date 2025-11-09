@@ -33,6 +33,7 @@ const restaurantSchema = new mongoose.Schema(
       city: { type: String },
       state: { type: String },
       pincode: { type: String },
+      fullAddress: { type: String },
       location: {
         type: {
           type: String,

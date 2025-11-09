@@ -7,6 +7,7 @@ const User = require("../../models/user.model");
 const Restaurant = require("../../models/restaurant.model");
 const getDistanceKm = require("../../utils/getDistanceKm");
 const { emitToUser, emitToRestaurant } = require("../../socket");
+const mongoose = require("mongoose");
 // const { default: items } = require("razorpay/dist/types/items");
 
 
@@ -70,11 +71,18 @@ router.post("/verify", async (req, res) => {
 
         const customOrderId = generateNextOrderId();
 
+        const formattedItems = orderData.items.map(i => ({
+    menuItemId: new mongoose.Types.ObjectId(i.menuItemId || i.id), // ✅ Fail-safe
+    quantity: i.quantity
+}));
+
+
+
         // save order in db
         const newOrder = await Order.create({
             userId: orderData.userId,
             restaurantId: orderData.restaurantId,
-            items: orderData.items,
+            items: formattedItems,
             totalAmount: orderData.totalAmount,
             deliveryAddress: orderData.deliveryAddress,
             paymentType: orderData.paymentType,
@@ -88,6 +96,7 @@ router.post("/verify", async (req, res) => {
         console.log("🔥 Emitting to restaurant room:", resId);
 
         emitToRestaurant(resId, "newOrder", {
+            id: newOrder._id,
             orderId: newOrder.orderId,
             totalAmount: newOrder.totalAmount,
             items: newOrder.items.length,
@@ -117,11 +126,23 @@ router.post("/order/cod", async (req, res) => {
     const grandTotal = subTotal + deliveryFee + Number(tip); 
 
     const customOrderId = generateNextOrderId();
+
+    
+
+    // const formattedItems = orderData.items.map(i => ({
+    //     menuItemId: new mongoose.Types.ObjectId(i.menuItemId),
+    //     quantity: i.quantity
+    // }));
     
     const newOrder = await Order.create({ 
         userId, 
         restaurantId, 
-        items, 
+        items: items.map(i => ({
+            menuItemId: new mongoose.Types.ObjectId(i.menuItemId || i.id), // ✅ FIX
+            quantity: i.quantity
+        })),
+
+
         totalAmount: grandTotal, 
         deliveryAddress, 
         paymentType: "cod", 
@@ -133,6 +154,7 @@ router.post("/order/cod", async (req, res) => {
     console.log("🔥 Emitting to restaurant room:", resId);
 
     emitToRestaurant(resId, "newOrder", {
+        id: newOrder._id,
         orderId: newOrder.orderId,
         totalAmount: newOrder.totalAmount,
         items: newOrder.items.length,

@@ -173,6 +173,7 @@ exports.fetchProfile = async (req, res) => {
 };
 
 exports.saveAddress = async (req, res) => {
+  const userId = req.user?._id;
   const { addressId, label, latitude, longitude } = req.body;
   if (!label || !latitude || !longitude) {
     return res.status(400).json({ message: "All fields are required" });
@@ -215,14 +216,22 @@ exports.saveAddress = async (req, res) => {
     };
 
     if (addressId) {
-      // updating existing address
-      const index = user.address.findIndex(
-        (addr) => addr._id.toString() === addressId
-      );
-      if (index === -1) {
+      // update existing address using Mongoose's subdocument update
+      const address = user.address.id(addressId);
+      if(!address) {
         return res.status(404).json({ message: "Address not found" });
       }
-      user.address[index] = { ...user.address[index]._doc, ...newAddress };
+      Object.assign(address, newAddress);
+
+      address.label = label;
+      address.fullAddress = fullAddress;
+      address.formattedAddress = formattedAddress;
+      address.coordinates = {
+        type: "Point",
+        coordinates: [longitude, latitude],
+      };
+
+      user.markModified("address");
     } else {
       // Add new address
       user.address.push(newAddress);
@@ -251,6 +260,9 @@ exports.getAddress = async (req, res) => {
     const { addressId } = req.query;
 
     const user = await User.findById(userId);
+    // const user = await User.findById(userId);
+    // console.log(user.address);
+
 
     if (!user || !user.address || user.address.length === 0) {
       return res
@@ -273,6 +285,8 @@ exports.getAddress = async (req, res) => {
     if(!user.address.some((a) => a.selectedAddress)) {
       user.address[0].selectedAddress = true;
     }
+
+    user.address = user.address.filter(a => a.fullAddress && a.formattedAddress);
 
     await user.save();
 

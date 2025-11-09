@@ -1,4 +1,5 @@
 const socketIo = require("socket.io");
+const Rider = require("./models/rider.model");
 
 let io;
 
@@ -24,7 +25,31 @@ function initializeSocket(server) {
       if (riderId) socket.join(`rider_${riderId}`);
 
       console.log("Rooms joined:", socket.rooms);     
-    })
+    });
+
+
+      socket.on("joinOrderRoom", ({orderId}) => {
+            socket.join(`order_${orderId}`);
+        });
+
+        socket.on("joinRestaurantRoom", ({restaurantId}) => {
+            socket.join(`restaurant_${restaurantId}`);
+        });
+
+        socket.on("joinRiderRoom", ({riderId}) =>{
+          socket.join(`rider_${riderId}`);
+        });
+
+        socket.on("riderLocationUpdate", async ({ riderId, latitude, longitude }) => {
+          try {
+            await Rider.findByIdAndUpdate(riderId, {
+              location: { type: "Point", coordinates: [longitude, latitude] },
+            });
+            console.log(`✅ Updated rider ${riderId} location: ${latitude},${longitude}`);
+          } catch (err) {
+            console.log("❌ Failed to update rider location:", err.message);
+          }
+        });
 
     socket.on("disconnect", () => {
       console.log(`Client disconnected: ${socket.id}`);
@@ -53,4 +78,9 @@ function sendMessageToSocketId(socketId, messageObject) {
   }
 }
 
-module.exports = { initializeSocket, sendMessageToSocketId, emitToUser, emitToRestaurant, emitToRider };
+function getIO() {
+    if (!io) throw new Error("Socket.io not initialized");
+    return io;
+}
+
+module.exports = { initializeSocket, sendMessageToSocketId, emitToUser, emitToRestaurant, emitToRider, getIO };

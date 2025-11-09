@@ -3,28 +3,28 @@ const User = require("../models/user.model");
 
 exports.protect = async (req, res, next) => {
   let token;
-
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith("Bearer")
-  ) {
-    try {
+  try {
+    if (
+      req.headers.authorization && 
+      req.headers.authorization.startsWith("Bearer")
+    ) {
       token = req.headers.authorization.split(" ")[1];
 
-      // Verify Token
+      // verify token
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-      // Attach user to request object (without password)
-      req.user = await User.findById(decoded.id).select("-password");
+      // fetch user
+      const user = await User.findById(decoded.id).select("-password");
+      if(!user) {
+        return res.status(401).json({ message: "User not found or deleted" })
+      }
 
-      next();
-    } catch (err) {
-      console.error(err);
-      return res.status(401).json({ message: "Not authorized, token failed" });
+      req.user = user;
+      return next();
     }
-  }
-
-  if (!token) {
     return res.status(401).json({ message: "Not authorized, no token" });
+  } catch (err) {
+    console.log("Protect middleware error:", err);
+    return res.status(401).json({ message: "Invalid or expired token" });
   }
 };
