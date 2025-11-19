@@ -2,11 +2,15 @@ const socketIo = require("socket.io");
 const Rider = require("./models/rider.model");
 
 let io;
-
+const allowedOrigins = [
+  "https://nagrow-client-demo.vercel.app",
+  "http://localhost:5173",
+  "http://localhost:8081",
+];
 function initializeSocket(server) {
   io = socketIo(server, {
     cors: {
-      origin: "https://nagrow-client-demo.vercel.app",
+      origin: allowedOrigins,
       methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
       allowedHeaders: ["Content-Type", "Authorization"]
     },

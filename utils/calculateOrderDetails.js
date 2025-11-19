@@ -29,6 +29,7 @@ async function calculateOrderDetails(userId, restaurantId, items, tip=0) {
     // securely calculate total
     const subTotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
     const deliveryFee = Math.ceil(distanceKm * 12);
+    console.log("deliveryFee: ", deliveryFee);
     const grandTotal = subTotal + deliveryFee + Number(tip);
 
 

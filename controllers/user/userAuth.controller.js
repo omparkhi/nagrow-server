@@ -13,6 +13,7 @@ exports.sendOtp = async (req, res) => {
   }
 
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  // console.log(otp)
 
   try {
     const data = await sendOtpToPhone(phone, otp);
@@ -205,6 +206,7 @@ exports.saveAddress = async (req, res) => {
     const country = parts[4]?.trim() || "";
     const formattedAddress = `House No: ${houseNo}, ${area}, ${city}, ${pinCode}, ${country}`;
 
+    const isFirstAddress = user.address.length === 0;
     const newAddress = {
       label,
       fullAddress,
@@ -213,6 +215,7 @@ exports.saveAddress = async (req, res) => {
         type: "Point",
         coordinates: [longitude, latitude],
       },
+      selectedAddress: isFirstAddress ? true : false,
     };
 
     if (addressId) {

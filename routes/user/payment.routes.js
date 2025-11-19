@@ -60,7 +60,7 @@ router.post("/verify", async (req, res) => {
         const body = razorpay_order_id + "|" + razorpay_payment_id;
 
         const expectedSignature = crypto
-            .createHmac("sha256", process.env.RAZORPAY_SECRET)
+            .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
             .update(body.toString())
             .digest("hex");
 
@@ -173,7 +173,7 @@ router.post("/order/cod", async (req, res) => {
 router.post("/cal/deliveryFee", async (req, res) => {
     try {
         const { userId, restaurantId } = req.body;
-         console.log("COD Body ===>", req.body); 
+        //  console.log("COD Body ===>", req.body); 
         if(!userId || !restaurantId) return res.status(400).json({ message: "Missing Parameters" });
 
         const user = await User.findById(userId);
@@ -200,6 +200,7 @@ router.post("/cal/deliveryFee", async (req, res) => {
         console.log(distanceKm);
 
         const deliveryFee = Math.ceil(distanceKm * 12);
+        console.log(deliveryFee);
         return res.json({ success: true, distanceKm, deliveryFee });
   } catch (err) {
         console.log(err);
