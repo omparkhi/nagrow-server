@@ -140,3 +140,39 @@ exports.loginRider = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+exports.fetchProfile = async (req, res) => {
+  try {
+    const rider = await Rider.findById(req.params.id).select("-password");
+    if (!rider) return res.status(404).json({ message: "rider not found" });
+    // console.log("rider info from backend:", rider)
+
+    res.json({ success: true, rider });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+exports.locationUpdate = async (req, res) => {
+  try {
+    const { riderId, coords } = req.body;
+
+    if (!riderId || !coords) {
+      return res.status(400).json({ message: "Missing data" });
+    }
+
+    const rider = await Rider.findByIdAndUpdate(riderId, {
+      location: coords,
+      isOnline: true,
+      isAvailable: true,
+      lastActive: new Date(),
+    });
+    // console.log("rider tracking start:", rider);
+
+    res.json({ success: true });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: "Server error" });
+  }
+}

@@ -1,120 +1,81 @@
-const Restaurant = require("../../models/restaurant.model");
-const Order = require("../../models/orders.model");
-const { emitToUser } = require("../../socket");
-const { getIO } = require("../../socket");
-const { findNearestRider } = require("../../services/findNearestRider");
+    const Restaurant = require("../../models/restaurant.model");
+    const Order = require("../../models/orders.model");
+    const { emitToUser, emitToRider } = require("../../services/emit.socket");
+    const { getSocket } = require("../../socket");
+    const { findNearestRider } = require("../../services/findNearestRider");
+    const { assignRiderToOrder } = require("../../services/riderAssignment");
 
 
-exports.getOrder = async (req, res) => {
-    try {
-        
-        const order = await Order.find({ restaurantId: req.params.id })
-        .sort({ createdAt: -1 })
-        .populate("userId", "name phone")
-        .populate("items.menuItemId", "name price image");
-        // res.send("order fetch");
-        console.log(order);
-        res.json({ success: true, order });
-    } catch (err) {
-        console.log(err);
-        res.status(500).json({ message: "Cannot fetch restaurant orders" });
-    }
-};
-
-
-
-exports.updateStatus = async (req, res) => {
-    try {
-        const { id, status } = req.body;
-
-        const validStatus = ["placed", "accepted", "preparing", "ready", "on the way", "delivered", "cancelled"];
-        if(!validStatus.includes(status)) {
-            return res.status(400).json({ message: "Invalid status" });
+    exports.getOrder = async (req, res) => {
+        try {
+            
+            const order = await Order.find({ restaurantId: req.params.id })
+            .sort({ createdAt: -1 })
+            .populate("userId", "name phone")
+            .populate("items.menuItemId", "name price image");
+            // res.send("order fetch");
+            // console.log(order);
+            res.json({ success: true, order });
+        } catch (err) {
+            console.log(err);
+            res.status(500).json({ message: "Cannot fetch restaurant orders" });
         }
+    };
 
-        const order = await Order.findByIdAndUpdate(
-            id,
-            { status },
-            { new: true }
-        ).populate("userId restaurantId riderId");
 
-        if (!order) {
-            return res.status(404).json({ message: "Order not found" });
-        }
 
-        order.status = status;
-        await order.save();
+    exports.updateStatus = async (req, res) => {
+        try {
+            const { id, status } = req.body;
 
-        const msg = `Your order is now ${order.status}`;
-        
-        const io = getIO();
+            const validStatus = ["placed", "accepted", "preparing", "ready"];
+            if(!validStatus.includes(status)) {
+                return res.status(400).json({ message: "Invalid status" });
+            }
 
-        // ✅ When restaurant marks as READY assin nearest rider
-        if(status === "ready") {
-            const restaurantCoords = order.restaurantId.address.location.coordinates;
-            const rider = await findNearestRider(restaurantCoords);
+            let order = await Order.findByIdAndUpdate(
+                id,
+                { status },
+                { new: true }
+            ).populate("userId restaurantId riderId");
 
-            // if(!rider) {
-            //     io.to
-            // }
+            if (!order) {
+                return res.status(404).json({ message: "Order not found" });
+            }
 
-            // Assign rider
-            order.riderId = rider._id;
-            order.status = "on the way";
+            // Restaurant Accept Order
+            if (status === "accepted") {
+                order.status = "preparing";
+                order.riderAssigned = false;
+                await order.save();
+
+                // start rider assignment in background
+                assignRiderToOrder(order._id);
+
+                emitToUser(order.userId._id, "order:status", {
+                    id: order._id,
+                    orderId: order.orderId,
+                    status: "preparing"
+                });
+
+                return res.json({ success: true, order });
+            }
+            
+            // other status updated
+            order.status = status;
             await order.save();
 
-            // update rider status
-            rider.isAvailable = false;
-            rider.currentOrderId = order._id;
-            await rider.save();
-
-            // Notify all parties
-            io.to(`order_${order._id}`).emit( "orderStatusUpdate", {
-                _id: order._id,
+            emitToUser(order.userId._id, "order:status", {
+                id: order._id,
                 orderId: order.orderId,
-                status: order.status,
-                message: "Your order is out for delivery 🚴‍♀️",
+                status: "preparing"
             });
 
-            io.to(`restaurant_${order.restaurantId._id}`).emit( "restaurantOrderUpdate", {
-                _id: order._id,
-                orderId: order.orderId,
-                status: order.status,
-                message: `Rider ${rider.name} assigned and picked up the order.`,
-            });
+            return res.json({ success: true, order });
 
-            io.to(`rider_${rider._id}`).emit( "newDelivery", {
-                _id: order._id,
-                orderId: order.orderId,
-                restaurant: order.restaurantId.name,
-                destination: order.deliveryAddress,
-                totalAmount: order.totalAmount,
-            });
 
+        } catch (err) {
+            console.log(err);
+            res.status(500).json({ message: "Error updating status" });
         }
-
-         // ✅ Normal status updates
-
-        // ✅ Emit to USER order room
-        io.to(`order_${id}`).emit( "orderStatusUpdate", {
-            _id: order._id,
-            orderId: order.orderId,
-            status: order.status,
-            message: msg,
-
-        });
-
-        // ✅ Emit to RESTAURANT room (kitchen dashboard)
-        io.to(`restaurant_${order.restaurantId._id}`).emit("restaurantOrderUpdate", {
-            _id: order._id,
-            status: order.status,
-            message: `Order #${order.orderId} → ${status}`,
-        })
-
-        res.json({ succes: true, order });
-        
-    } catch (err) {
-        console.log(err);
-        res.status(500).json({ message: "Error updating status" });
-    }
-};
+    };

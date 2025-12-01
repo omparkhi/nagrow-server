@@ -99,6 +99,8 @@ exports.loginRestaurant = async (req, res) => {
     }
 
     const token = generateToken(restaurant._id);
+    // console.log("API Response:", res);
+
 
     return res.status(200).json({
       success: true,
@@ -109,6 +111,18 @@ exports.loginRestaurant = async (req, res) => {
   } catch (err) {
     console.log("Error while Restaurant Login", err.message);
     return res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+exports.fetchProfile = async (req, res) => {
+  try {
+    const restaurant = await Restaurant.findById(req.params.id).select("-password")
+    if (!restaurant) return res.status(404).json({ message: "Restaurant not found" });
+
+    res.json({ success: true, restaurant })
+  } catch (err) {
+    console.log("Error while fetching Restaurant Profile", err);
+    return res.status(500).json({ message: "Internal Server Error" })
   }
 };
 

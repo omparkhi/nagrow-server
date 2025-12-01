@@ -12,7 +12,9 @@ async function getDistanceKm(origin, destination) {
         const distanceKm = distanceMeters / 1000;
         // console.log("distanceKm: ", distanceKm);
         // console.log("distanceKm * 10: ", (distanceKm * 10) / 10 );
-        const roundedDistance = Math.round( distanceKm * 10 ) / 10;
+        // const roundedDistance = Math.round( distanceKm * 10 ) / 10;
+        const roundedDistance = Math.round(distanceKm * 1000) / 1000; // rounds to 3 decimal places
+
         return roundedDistance;
     }
 

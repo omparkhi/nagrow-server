@@ -1,90 +1,50 @@
 const socketIo = require("socket.io");
 const Rider = require("./models/rider.model");
-
 let io;
+
 const allowedOrigins = [
   "https://nagrow-client-demo.vercel.app",
   "http://localhost:5173",
   "http://localhost:8081",
+  "http://192.168.1.6:8081",  
 ];
+
 function initializeSocket(server) {
   io = socketIo(server, {
     cors: {
       origin: allowedOrigins,
-      methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-      allowedHeaders: ["Content-Type", "Authorization"]
+      methods: ["GET","POST","PUT","DELETE","OPTIONS"],
+      allowedHeaders: ["Content-Type","Authorization"]
     },
   });
 
   io.on("connection", (socket) => {
-    console.log(`Client connected: ${socket.id}`);
+    console.log("Socket connected:", socket.id);
 
-    // Handle joining room
-    socket.on("joinRoom", ({ userId, restaurantId, riderId }) => {
-      if (userId) socket.join(`user_${userId}`);
-      if (restaurantId) {
-        socket.join(`restaurant_${restaurantId}`);
-        console.log(`Restaurant joined room: restaurant_${restaurantId}`);
-      }
-      if (riderId) socket.join(`rider_${riderId}`);
-
-      console.log("Rooms joined:", socket.rooms);     
+    // Join room
+    socket.on("joinRoom", ({ roomType, roomId }) => {
+      const room = `${roomType}_${roomId}`;
+      socket.join(room);
+      console.log(`Joined room: ${room}`);
     });
 
-
-      socket.on("joinOrderRoom", ({orderId}) => {
-            socket.join(`order_${orderId}`);
-        });
-
-        socket.on("joinRestaurantRoom", ({restaurantId}) => {
-            socket.join(`restaurant_${restaurantId}`);
-        });
-
-        socket.on("joinRiderRoom", ({riderId}) =>{
-          socket.join(`rider_${riderId}`);
-        });
-
-        socket.on("riderLocationUpdate", async ({ riderId, latitude, longitude }) => {
-          try {
-            await Rider.findByIdAndUpdate(riderId, {
-              location: { type: "Point", coordinates: [longitude, latitude] },
-            });
-            console.log(`✅ Updated rider ${riderId} location: ${latitude},${longitude}`);
-          } catch (err) {
-            console.log("❌ Failed to update rider location:", err.message);
-          }
-        });
+    // Rider location update
+    socket.on("rider:location", ({ riderId, coords }) => {
+      const room = `rider_${riderId}`;
+      io.to(room).emit("rider:location", coords);
+    });
 
     socket.on("disconnect", () => {
-      console.log(`Client disconnected: ${socket.id}`);
+      console.log("Socket disconnected");
     });
   });
+
+  return io;
 }
 
-function emitToUser(userId, event, data) {
-  io.to(`user_${userId}`).emit(event, data);
+function getSocket() {
+   if (!io) throw new Error("Socket.io not initialized");
+  return io;
 }
 
-function emitToRestaurant(restaurantId, event, data) {
-  io.to(`restaurant_${restaurantId}`).emit(event, data);
-   console.log("📢 Emitting event to room:", `restaurant_${restaurantId}`, "event:", event, "data:", data);
-}
-
-function emitToRider(riderId, event, data) {
-  io.to(`rider_${riderId}`).emit(event, data);
-}
-
-function sendMessageToSocketId(socketId, messageObject) {
-  if (io) {
-    io.to(socketId).emit(messageObject.event, messageObject.data);
-  } else {
-    console.log("Socket.io not initialized");
-  }
-}
-
-function getIO() {
-    if (!io) throw new Error("Socket.io not initialized");
-    return io;
-}
-
-module.exports = { initializeSocket, sendMessageToSocketId, emitToUser, emitToRestaurant, emitToRider, getIO };
+module.exports = { initializeSocket, getSocket };

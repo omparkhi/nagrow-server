@@ -13,5 +13,5 @@
   initializeSocket(server);
 
   server.listen(port, '0.0.0.0', () => {
-    console.log(`server is running on port ${port}`);
+    console.log(`server is running on port 0.0.0.0 ${port}`);
   });

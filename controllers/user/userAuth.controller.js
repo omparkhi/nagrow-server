@@ -109,7 +109,7 @@ exports.registerUser = async (req, res) => {
       },
     });
   } catch (err) {
-    console.error("Registration Error: ", err.message);
+    console.log("Registration Error: ", err.message);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
@@ -196,21 +196,11 @@ exports.saveAddress = async (req, res) => {
         .json({ message: "Failed to fetch address from Google Maps" });
     }
     const fullAddress = geoRes.data.results[0].formatted_address;
-    const parts = fullAddress.split(",");
-    const houseNo = parts[0]?.includes("/")
-      ? parts[0].split("/")[1].trim()
-      : parts[0].trim();
-    const area = parts[1]?.trim() || "";
-    const city = parts[2]?.trim() || "";
-    const pinCode = parts[3]?.match(/\d{6}/)?.[0] || "";
-    const country = parts[4]?.trim() || "";
-    const formattedAddress = `House No: ${houseNo}, ${area}, ${city}, ${pinCode}, ${country}`;
 
     const isFirstAddress = user.address.length === 0;
     const newAddress = {
       label,
       fullAddress,
-      formattedAddress,
       coordinates: {
         type: "Point",
         coordinates: [longitude, latitude],
@@ -228,7 +218,6 @@ exports.saveAddress = async (req, res) => {
 
       address.label = label;
       address.fullAddress = fullAddress;
-      address.formattedAddress = formattedAddress;
       address.coordinates = {
         type: "Point",
         coordinates: [longitude, latitude],
@@ -289,7 +278,7 @@ exports.getAddress = async (req, res) => {
       user.address[0].selectedAddress = true;
     }
 
-    user.address = user.address.filter(a => a.fullAddress && a.formattedAddress);
+    user.address = user.address.filter(a => a.fullAddress);
 
     await user.save();
 
@@ -308,10 +297,10 @@ exports.getAddress = async (req, res) => {
 
 exports.updateAddress = async (req, res) => {
   const { addressId } = req.params;
-  const { formattedAddress } = req.body;
+  const { fullAddress, coordinates } = req.body;
 
-  if (!formattedAddress) {
-    return res.status(400).json({ message: "All fields are required" });
+  if (!fullAddress || !coordinates?.coordinates) {
+    return res.status(400).json({ message: "Full address and coordinates are required" });
   }
 
   try {
@@ -320,7 +309,8 @@ exports.updateAddress = async (req, res) => {
       {
         $set: {
           // "address.$.label": label,
-          "address.$.formattedAddress": formattedAddress,
+          "address.$.fullAddress": fullAddress,
+          "address.$.coordinates": coordinates,
         },
       },
       { new: true }

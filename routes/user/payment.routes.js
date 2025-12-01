@@ -6,8 +6,9 @@ const Order = require("../../models/orders.model");
 const User = require("../../models/user.model");
 const Restaurant = require("../../models/restaurant.model");
 const getDistanceKm = require("../../utils/getDistanceKm");
-const { emitToUser, emitToRestaurant } = require("../../socket");
+const { emitToUser, emitToRestaurant } = require("../../services/emit.socket");
 const mongoose = require("mongoose");
+const { title } = require("process");
 // const { default: items } = require("razorpay/dist/types/items");
 
 
@@ -40,6 +41,7 @@ router.post("/order", async (req, res) => {
         return res.json({ 
             success: true,
             order,
+            distanceKm,
             totalAmount: grandTotal,
             subTotal,
             deliveryFee,
@@ -83,6 +85,8 @@ router.post("/verify", async (req, res) => {
             userId: orderData.userId,
             restaurantId: orderData.restaurantId,
             items: formattedItems,
+            distanceKm: orderData.distanceKm,
+            deliveryFee: orderData.deliveryFee,
             totalAmount: orderData.totalAmount,
             deliveryAddress: orderData.deliveryAddress,
             paymentType: orderData.paymentType,
@@ -95,13 +99,23 @@ router.post("/verify", async (req, res) => {
         const resId = orderData.restaurantId.toString().replace(/"/g, "");
         console.log("🔥 Emitting to restaurant room:", resId);
 
-        emitToRestaurant(resId, "newOrder", {
-            id: newOrder._id,
-            orderId: newOrder.orderId,
-            totalAmount: newOrder.totalAmount,
-            items: newOrder.items.length,
-            message: "New Online Order Received"
-        });
+        // const notificationPayloadForRestaurant = {
+        //     receiverId: resId,
+        //     receiverModel: "Restaurant",
+        //     title: "New order Received",
+        //     message: `Order ${newOrder.orderId} received (${newOrder.items.length} items)`,
+        //     order_Id: newOrder._id,
+        //     type: "order_update",
+        //     data: { order_Id: newOrder._id, orderId: newOrder.orderId }
+        // };
+
+        // const Notification = require("../../models/notification.model");
+        // const createdNotification = await Notification.create(notificationPayloadForRestaurant);
+
+        emitToRestaurant(resId, "order:new", newOrder);
+
+        // also emit a standard notification event
+        // emitToRestaurant(resId, "notification:new", createdNotification);
 
         res.json({ success: true, order: newOrder });
     } catch (err) {
@@ -141,8 +155,8 @@ router.post("/order/cod", async (req, res) => {
             menuItemId: new mongoose.Types.ObjectId(i.menuItemId || i.id), // ✅ FIX
             quantity: i.quantity
         })),
-
-
+        distanceKm: distanceKm, 
+        deliveryFee: deliveryFee,
         totalAmount: grandTotal, 
         deliveryAddress, 
         paymentType: "cod", 
@@ -153,13 +167,24 @@ router.post("/order/cod", async (req, res) => {
     const resId = restaurantId.toString().replace(/"/g, "");
     console.log("🔥 Emitting to restaurant room:", resId);
 
-    emitToRestaurant(resId, "newOrder", {
-        id: newOrder._id,
-        orderId: newOrder.orderId,
-        totalAmount: newOrder.totalAmount,
-        items: newOrder.items.length,
-        message: "New COD Order Received"
-    })
+    // const notificationPayloadForRestaurant = {
+    //     receiverId: resId,
+    //     receiverModel: "Restaurant",
+    //     title: "New order Received",
+    //     message: `Order ${newOrder.orderId} received (${newOrder.items.length} items)`,
+    //     order_Id: newOrder._id,
+    //     type: "order_update",
+    //     data: { order_Id: newOrder._id, orderId: newOrder.orderId }
+    // };
+
+    // persist notification server-side (optional but recommended)
+    // const Notification = require("../models/notification.model");
+    // const createdNotification = await Notification.create(notificationPayloadForRestaurant);
+
+    emitToRestaurant(resId, "order:new", newOrder);
+
+    // also emit a standard notification event
+    // emitToRestaurant(resId, "notification:new", createdNotification);
     
     return res.json({ success: true, order: newOrder, message: "COD order placed successfully" });
 

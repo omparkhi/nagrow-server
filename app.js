@@ -19,6 +19,8 @@
   const getRestaurantDetails = require("./routes/user/getRestaurantDetails.routes");
   const paymentRoutes = require("./routes/user/payment.routes");
   const getUserOrderRoutes = require("./routes/user/getUserOrder.routes");
+  const notificationRoutes = require("./routes/notification/notification.routes");
+  const riderOrderRoute = require("./routes/rider/riderOrder.route");
 
   connectDB();
 
@@ -66,5 +68,9 @@
   app.use("/api/order/details", restaurantOrderByIdRoutes);
 
   app.use("/api/user", getUserOrderRoutes);
+
+ app.use("/api/notifications", notificationRoutes);
+
+ app.use("/api/rider", riderOrderRoute);
 
   module.exports = app;

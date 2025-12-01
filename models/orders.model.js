@@ -29,12 +29,18 @@ const orderschema = new mongoose.Schema(
         quantity: Number,
       },
     ],
+    distanceKm: {
+      type: Number,
+    },
+    deliveryFee: {
+      type: Number,
+    },
     totalAmount: {
       type: Number,
       required: true,
     },
     deliveryAddress: {
-      formattedAddress: {
+      fullAddress: {
         type: String,
         required: true,
       },
@@ -54,12 +60,18 @@ const orderschema = new mongoose.Schema(
         "placed",
         "accepted",
         "preparing",
+        "waiting_for_rider",
         "ready",
+        "pick_up_by_rider",
         "on the way",
         "delivered",
         "cancelled",
       ],
       default: "placed",
+    },
+    riderAssigned : {
+      type: Boolean,
+      default: false,
     },
     paymentId: { type: String },
     razorpayOrderId: { type: String },

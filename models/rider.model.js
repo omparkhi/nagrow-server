@@ -19,11 +19,6 @@ const riderSchema = new mongoose.Schema(
       required: true,
     },
 
-    isAvailable: {
-      type: Boolean,
-      default: true,
-    },
-
     assignedOrders: [
       {
         type: mongoose.Schema.Types.ObjectId,
@@ -32,16 +27,12 @@ const riderSchema = new mongoose.Schema(
     ],
 
     location: {
-      type: {
-        type: String,
-        enum: ["Point"],
-        default: "Point",
-      },
-      coordinates: {
-        type: [Number],
-        default: [0, 0],
-      },
+      lat: { type: Number },
+      lng: { type: Number }
     },
+    isOnline: { type: Boolean, default: false },
+    isAvailable: { type: Boolean, default: false },
+    lastActive: { type: Date },
 
     documents: {
       aadharUrl: { type: String },

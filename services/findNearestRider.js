@@ -4,16 +4,17 @@ const axios = require("axios");
 // ✅ Find nearest available rider using Google Distance Matrix
 exports.findNearestRider = async (restaurantCoords) => {
     const availableRiders = await Rider.find({ 
+        isOnline: true,
         isAvailable: true,
-        "location.coordinates.0": { $ne: 0 },
-        "location.coordinates.1": { $ne: 0 },
+        "location.lat": { $ne: 0 },
+        "location.lng": { $ne: 0 },
     });
 
     console.log("all rider available :" , availableRiders);
     if(availableRiders.length === 0) return null;
 
     const destinations = availableRiders
-    .map((rider) => `${rider.location.coordinates[1]},${rider.location.coordinates[0]}`)
+    .map((rider) => `${rider.location.lat},${rider.location.lng}`)
     .join("|"); 
 
     const api = process.env.GOOGLE_API_KEY;
