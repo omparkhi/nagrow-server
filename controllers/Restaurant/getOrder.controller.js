@@ -42,6 +42,7 @@
             if (!order) {
                 return res.status(404).json({ message: "Order not found" });
             }
+            console.log("update order details:", order);
 
             // Restaurant Accept Order
             if (status === "accepted") {
@@ -68,7 +69,7 @@
             emitToUser(order.userId._id, "order:status", {
                 id: order._id,
                 orderId: order.orderId,
-                status: "preparing"
+                status: order.status,
             });
 
             return res.json({ success: true, order });

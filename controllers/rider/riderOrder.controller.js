@@ -8,6 +8,7 @@ exports.riderResponse = async(req, res) => {
 
     const order = await Order.findById(orderId);
     const rider = await Rider.findById(riderId);
+    console.log("order details at rider acceptance:", order);
 
     if (!order || !rider) return res.status(404).json({ message: "Invalid" });
 
@@ -20,18 +21,20 @@ exports.riderResponse = async(req, res) => {
         order.riderAssigned = true;
         // order.status = "rider_assigned";
         await order.save();
+        console.log("order accept by rider:", order, "orderID:", orderId, "riderId:", riderId);
 
         rider.isAvailable = false;
         rider.currentOrderId = orderId;
         rider.assignedOrders.push(orderId);
         await rider.save();
 
-        emitToUser(order.userId._id, "order:status", {
+        emitToUser(order.userId, "order:status", {
             orderId,
             riderId,
             riderAssigned: true
         });
-        emitToRestaurant(order.restaurantId._id, "delivery:accepted", {
+        emitToRestaurant(order.restaurantId, "delivery:accepted", {
+            id: order?._id || order?.id,
             orderId,
             riderId,
             riderAssigned: true
@@ -51,7 +54,7 @@ exports.getRiderOrderdetails = async (req, res) => {
         const orderId = req.params.id;
 
         const order = await Order.findOne({ _id: orderId })
-            .populate("userId", "name phone")
+            .populate("userId", "firstName lastName phone")
             .populate("restaurantId", "name address phone")
             .populate("items.menuItemId", "name price image");
 
@@ -89,8 +92,8 @@ exports.updateRiderOrderStatus = async (req, res) => {
         await order.save();
 
         // Notify user + restaurant
-        emitToUser(order.userId._id, "order:status", { orderId: order._id, status });
-        emitToRestaurant(order.restaurantId._id, "order:status", { orderId: order._id, status });
+        emitToUser(order.userId, "order:status", { orderId: order._id, status });
+        emitToRestaurant(order.restaurantId, "order:status", { orderId: order._id, status });
 
         // If delivered, rider becomes free
         if (status === "delivered") {

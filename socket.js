@@ -32,6 +32,7 @@ function initializeSocket(server) {
     socket.on("rider:location", ({ riderId, coords }) => {
       const room = `rider_${riderId}`;
       io.to(room).emit("rider:location", coords);
+      console.log("rider coords from socket", coords);
     });
 
     socket.on("disconnect", () => {

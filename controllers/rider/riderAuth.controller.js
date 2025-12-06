@@ -3,6 +3,8 @@ const bcrypt = require("bcryptjs");
 const generateToken = require("../../utils/generateToken");
 const sendOtpToPhone = require("../../services/otp.services");
 const otpModel = require("../../models/otp.model");
+const { emitToUser, emitToRestaurant, emitToRider } = require("../../services/emit.socket");
+const { getSocket } = require("../../socket");
 
 exports.sendOtp = async (req, res) => {
   const { phone } = req.body;
@@ -168,9 +170,36 @@ exports.locationUpdate = async (req, res) => {
       isAvailable: true,
       lastActive: new Date(),
     });
-    // console.log("rider tracking start:", rider);
+    // // console.log("rider tracking start:", rider);
+    // emitToUser(rider.currentOrderId, "rider:location", {
+    //   lat: rider.location
+    // })
 
     res.json({ success: true });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: "Server error" });
+  }
+}
+
+exports.stopShift = async (req, res) => {
+  try {
+    const { riderId } = req.body;
+  if (!riderId) {
+    return res.status(400).json({ message: "Missing data" });
+  }
+
+  const rider = await Rider.findByIdAndUpdate(riderId, {
+    isOnline: false,
+    isAvailable: false,
+    location: null
+  },
+  { new: true }
+);
+  const io = getSocket();
+  // req.io.to(riderId).emit("rider:offline", { riderId });
+
+  res.json({ success: true });  
   } catch (err) {
     console.log(err);
     res.status(500).json({ message: "Server error" });

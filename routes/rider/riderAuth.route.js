@@ -9,5 +9,6 @@ router.post("/register", riderAuthController.registerRider);
 router.post("/login", riderAuthController.loginRider);
 router.get("/profile/:id", riderAuthController.fetchProfile);
 router.post("/update/location", riderAuthController.locationUpdate);
+router.post("/stop/shift", riderAuthController.stopShift);
 
 module.exports = router;
